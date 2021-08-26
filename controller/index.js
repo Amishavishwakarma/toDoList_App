@@ -34,16 +34,9 @@ exports.post_user = async (req, res) => {
             } && {
                 Password: req.body.password
             })
+    
+        let{Name,Id,Email_id,Age,id,name}=getdata[0]
 
-
-        getdata[0]["Cities"] = {
-            Name: getdata[0]["name"],
-            id: getdata[0]["id"]
-        }
-        delete getdata[0]["City_id"]
-        delete getdata[0]["id"]
-        delete getdata[0]["name"]
-        delete getdata[0]["Password"]
         const tokon = await jwt.sign({
             Email_id: req.body.eMail,
             Password: req.body.password
@@ -53,7 +46,15 @@ exports.post_user = async (req, res) => {
             secure: true,
             maxAge: 3600000
         });
-        res.send(getdata)
+
+        res.send({
+            Name:Name,
+            Id:Id,
+            Email_id,Email_id,
+            Age:Age,
+            cities:{id:id,name,name}
+        })
+
 
     } catch (error) {
         res.send(error)
@@ -94,58 +95,42 @@ exports.login = async (req, res) => {
 
 exports.get_user = async (req, res) => {
     try {
-        if (req.query.agemorethen != undefined) {
-            if (req.query.city_id != undefined) {
-                getdata = await knex("user").select("*")
-                    .join("Cities", "Cities.id", '=', 'user.City_id')
-                    .where('age', '>', req.query.agemorethen)
-                    .where("user.City_id", req.query.city_id)
-
-            } else {
-                getdata = await knex("user").select("*")
-                    .join("Cities", "Cities.id", '=', 'user.City_id')
-                    .where('age', '>', req.query.agemorethen)
+        list=[]
+       getdata=await knex("user").select("*").join("Cities", "Cities.id", '=', 'user.City_id').modify(function(query){
+        if (req.query.agemorethen) {
+            if (req.query.city_id){
+                query.where("user.City_id", req.query.city_id)
+                query.andWhere('age', '>=', req.query.agemorethen)
             }
-
-        } else if (req.query.agelessthen != undefined) {
-            if (req.query.city_id != undefined) {
-                getdata = await knex("user").select("*")
-                    .join("Cities", "Cities.id", '=', 'user.City_id')
-                    .where('age', '<', req.query.agelessthen)
-                    .where("user.City_id", req.query.city_id)
-                console.log(getdata)
-            } else {
-                getdata = await knex("user").select("*")
-                    .join("Cities", "Cities.id", '=', 'user.City_id')
-                    .where('age', '<', req.query.agelessthen)
+            else {
+                query.andWhere('age', '>=', req.query.agemorethen)
+                
             }
-        } else {
-            if (req.query.city_id != undefined) {
-                getdata = await knex("user").select("*")
-                    .join("Cities", "Cities.id", '=', 'user.City_id')
-                    .where("user.City_id", req.query.city_id)
-                console.log(getdata)
-            } else {
-                getdata = await knex("user").select("*")
-                    .join("Cities", "Cities.id", '=', 'user.City_id')
+            
+        }else if(req.query.agelessthen){
+            if (req.query.city_id){
+                query.where("user.City_id", req.query.city_id)
+                query.andWhere('age', '<=', req.query.agelessthen)
             }
+            else {
+                query.andWhere('age', '<=', req.query.agelessthen)
+                
+            }
+        }else if(req.query.city_id){
+            query.where("user.City_id", req.query.city_id)
         }
-
-        //if get data exist
-        if (getdata.length != 0) {
-            getdata[0]["Cities"] = {
-                Name: getdata[0]["name"],
-                id: getdata[0]["id"]
-            }
-            delete getdata[0]["City_id"]
-            delete getdata[0]["id"]
-            delete getdata[0]["name"]
-            delete getdata[0]["Password"]
-
-            res.send(getdata)
-        } else {
-            res.send("no such files are there")
+       })
+       for (i in getdata){
+        var {Name,Id,Email_id,Age,id,name}=getdata[i]
+        list.push({
+            Name:Name,
+            Id:Id,
+            Email_id,Email_id,
+            Age:Age,
+            cities:{id:id,name:name}
+        })
         }
+        res.send(list)
     } catch (error) {
         res.send(error)
     }
@@ -154,22 +139,20 @@ exports.get_user = async (req, res) => {
 
 exports.get_user_by_userId = async (req, res) => {
     try {
-        console.log(req.params.userId)
         let getdata = await knex("user")
-            .select("*")
+            .select("user.Id","user.Name","user.Email_id","user.Age","Cities.id","Cities.name")
             .join("Cities", "Cities.id", '=', 'user.City_id')
             .where('user.Id', req.params.userId)
-
-        getdata[0]["Cities"] = {
-            Name: getdata[0]["name"],
-            id: getdata[0]["id"]
-        }
-        delete getdata[0]["City_id"]
-        delete getdata[0]["id"]
-        delete getdata[0]["name"]
-        delete getdata[0]["Password"]
-
-        res.send(getdata)
+            
+        let{Name,Id,Email_id,Age,id,name}=getdata[0]
+        
+        res.send({
+            Name:Name,
+            Id:Id,
+            Email_id,Email_id,
+            Age:Age,
+            cities:{id:id,name,name}
+        })
 
     } catch (error) {
         res.send(error)
@@ -186,32 +169,25 @@ exports.todos = async (req, res) => {
         })
 
         let todolist = await knex("todotask")
-            .select("*")
+            .select("user.Id","user.Name","user.Email_id","user.Age","Cities.id","Cities.name","todotask.assignedTo","todotask.Id","todotask.text","todotask.dueDate")
             .join("user", "user.Id", '=', 'todotask.assignedTo')
             .join("Cities", "Cities.id", '=', 'user.City_id')
-            .where('todotask.assignedTo', req.body.assignedTo)
+            .where({assignedTo:req.body.assignedTo})
 
-        todolist[0]["assignedTo"] = {
-            idName: todolist[0]["Id"],
-            Name: todolist[0]["Name"],
-            Email_id: todolist[0]["Email_id"]
-        }
-        todolist[0]["cities"] = {
-            Name: todolist[0]["name"],
-            id: todolist[0]["id"]
-        }
-        delete todolist[0]["City_id"]
-        delete todolist[0]["id"]
-        delete todolist[0]["name"]
-        delete todolist[0]["Password"]
-        delete todolist[0]["Id"]
-        delete todolist[0]["Name"]
-        delete todolist[0]["Email_id"]
-        delete todolist[0]["Age"]
+        let {text,dueDate,Name,Id,Email_id,Age,id,name}=todolist[0]
 
+        res.send({todo:{
+            text:text,
+            assignedTo:{
+                Name:Name,
+                Id:Id,
+                Email_id,Email_id,
+                Age:Age,
+                cities:{id:id,name,name}
+            },
+            dueDate:dueDate
 
-
-        res.send(todolist)
+        }})
     } catch (error) {
         res.send(error)
     }
@@ -223,31 +199,29 @@ exports.todos = async (req, res) => {
 
 exports.mytodos = async (req, res) => {
     try {
-
+        list=[]
         let todolist = await knex("todotask")
             .select("*")
             .join("user", "user.Id", '=', 'todotask.assignedTo')
             .join("Cities", "Cities.id", '=', 'user.City_id')
 
-        todolist[0]["assignedTo"] = {
-            idName: todolist[0]["Id"],
-            Name: todolist[0]["Name"],
-            Email_id: todolist[0]["Email_id"]
-        }
-        todolist[0]["cities"] = {
-            Name: todolist[0]["name"],
-            id: todolist[0]["id"]
-        }
-        delete todolist[0]["City_id"]
-        delete todolist[0]["id"]
-        delete todolist[0]["name"]
-        delete todolist[0]["Password"]
-        delete todolist[0]["Id"]
-        delete todolist[0]["Name"]
-        delete todolist[0]["Email_id"]
-        delete todolist[0]["Age"]
+    for (i in todolist){
+        let {text,dueDate,Name,Id,Email_id,Age,id,name}=todolist[i]
+        list.push({
+            text:text,
+            assignedTo:{
+                Name:Name,
+                Id:Id,
+                Email_id,Email_id,
+                Age:Age,
+                cities:{id:id,name,name}
+            },
+            dueDate:dueDate
 
-        res.send(todolist)
+        })
+    }
+    res.send(list)
+
     } catch (error) {
         res.send(error)
     }
