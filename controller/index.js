@@ -50,9 +50,9 @@ exports.post_user = async (req, res) => {
         res.send({
             Name:Name,
             Id:Id,
-            Email_id,Email_id,
+            Email_id:Email_id,
             Age:Age,
-            cities:{id:id,name,name}
+            cities:{id:id,name:name}
         })
 
 
@@ -125,7 +125,7 @@ exports.get_user = async (req, res) => {
         list.push({
             Name:Name,
             Id:Id,
-            Email_id,Email_id,
+            Email_id:Email_id,
             Age:Age,
             cities:{id:id,name:name}
         })
@@ -149,9 +149,9 @@ exports.get_user_by_userId = async (req, res) => {
         res.send({
             Name:Name,
             Id:Id,
-            Email_id,Email_id,
+            Email_id:Email_id,
             Age:Age,
-            cities:{id:id,name,name}
+            cities:{id:id,name:name}
         })
 
     } catch (error) {
@@ -181,9 +181,9 @@ exports.todos = async (req, res) => {
             assignedTo:{
                 Name:Name,
                 Id:Id,
-                Email_id,Email_id,
+                Email_id:Email_id,
                 Age:Age,
-                cities:{id:id,name,name}
+                cities:{id:id,name:name}
             },
             dueDate:dueDate
 
@@ -212,9 +212,9 @@ exports.mytodos = async (req, res) => {
             assignedTo:{
                 Name:Name,
                 Id:Id,
-                Email_id,Email_id,
+                Email_id:Email_id,
                 Age:Age,
-                cities:{id:id,name,name}
+                cities:{id:id,name:name}
             },
             dueDate:dueDate
 
